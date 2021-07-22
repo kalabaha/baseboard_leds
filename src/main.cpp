@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFI.h>
 #include "config.h"
 #include "version.h"
 
@@ -21,6 +22,24 @@ void setup()
     printf("========================\n");
     printf("\n");
 
+    String hostname = "BBL-" + String((uint32_t)(ESP.getEfuseMac()));
+    log_i("Name: %s\n", hostname.c_str());
+    WiFi.setHostname(hostname.c_str());
+
+    log_i("connecting to SSDI %s", CONFIG_WIFI_SSID);
+
+    WiFi.begin(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    WiFi.waitForConnectResult();
+
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        WiFi.disconnect();
+        log_w("connection failed");
+    }
+    else
+    {
+        log_i("connected");
+    }
 }
 
 void loop()
