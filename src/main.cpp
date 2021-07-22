@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <WiFI.h>
+#include <WiFi.h>
 #include "config.h"
 #include "version.h"
 
