@@ -3,6 +3,11 @@
 #include "config.h"
 #include "version.h"
 
+#include "ESPAsyncWebServer.h"
+#include "SPIFFS.h"
+
+static AsyncWebServer _server(80);
+
 void setup()
 {
     Serial.begin(CONFIG_UART_BAUD_RATE);
@@ -39,6 +44,18 @@ void setup()
     else
     {
         log_i("connected");
+
+        if (SPIFFS.begin(true))
+        {
+            _server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+                       { request->redirect("/index.html"); });
+            _server.serveStatic("/", SPIFFS, "/");
+        }
+        else
+        {
+            log_w("An Error has occurred while mounting SPIFFS");
+        }
+        _server.begin();
     }
 }
 
