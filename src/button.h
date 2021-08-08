@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FreeRTOS.h>
+#include <stdint.h>
 
 #define BUTTON_HOLD             (UINT32_MAX)
 #define BUTTON_HOLD_RELEASE     (UINT32_MAX - 1)

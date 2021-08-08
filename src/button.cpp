@@ -109,7 +109,7 @@ void button_init(void (*cb)(uint32_t clk_cnt))
     timerAlarmEnable(timer);
 
     xTaskCreate(button_task,
-                "task_button",
+                "button",
                 TASK_BUTTON_STACK_SIZE,
                 NULL,
                 TASK_BUTTON_PRIORITY,
@@ -117,4 +117,3 @@ void button_init(void (*cb)(uint32_t clk_cnt))
 }
 
 /* -------------------------------------------------------------------------- */
-
