@@ -8,16 +8,30 @@
 
 #include "Adafruit_NeoPixel.h"
 
+#include "button.h"
+
+/* -------------------------------------------------------------------------- */
+
 static Adafruit_NeoPixel strip_0(CONFIG_NEOPIXEL_CH0_NUM, CONFIG_NEOPIXEL_CH0_PIN, NEO_GRB + NEO_KHZ800);
 
-static uint32_t _color = strip_0.Color(127, 127, 128);
+static uint32_t _color_list[] = 
+{
+    strip_0.Color(127, 127, 127),
+    strip_0.Color(127, 0, 0),
+    strip_0.Color(0, 128, 0),
+    strip_0.Color(0, 0, 128)
+};
+static uint32_t _color_index = 0;
 
-static AsyncWebServer* _server;
+/* -------------------------------------------------------------------------- */
 
 #define TASK_WIFI_CONNECT_STACK_SIZE       (3000)
 #define TASK_WIFI_CONNECT_PRIORITY         (configMAX_PRIORITIES - 5)  
 
 static TaskHandle_t _wifi_connect_task_handler;
+static AsyncWebServer* _server;
+
+/* -------------------------------------------------------------------------- */
 
 static void wifi_connect_task(void* parameter)
 {
@@ -25,7 +39,7 @@ static void wifi_connect_task(void* parameter)
     log_i("Name: %s\n", hostname.c_str());
     WiFi.setHostname(hostname.c_str());
 
-    log_i("connecting to SSDI %s", CONFIG_WIFI_SSID);
+    log_i("connecting to SSID %s", CONFIG_WIFI_SSID);
 
     WiFi.begin(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
     WiFi.waitForConnectResult();
@@ -56,6 +70,25 @@ static void wifi_connect_task(void* parameter)
     vTaskDelete(NULL);
 }
 
+/* -------------------------------------------------------------------------- */
+
+static void _button_click_cb(uint32_t click_cnt)
+{
+    switch (click_cnt)
+    {
+    case BUTTON_HOLD:
+    case BUTTON_HOLD_RELEASE:
+        /* do nothing */
+        break;
+
+    default:
+        _color_index = (_color_index + click_cnt) % 4;
+        break;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 void setup()
 {
     Serial.begin(CONFIG_UART_BAUD_RATE);
@@ -79,6 +112,8 @@ void setup()
     strip_0.show();
     strip_0.setBrightness(255);
 
+    button_init(_button_click_cb);
+
     xTaskCreate(wifi_connect_task,
                 "task_wifi_connect",
                 TASK_WIFI_CONNECT_STACK_SIZE,
@@ -87,13 +122,14 @@ void setup()
                 &_wifi_connect_task_handler);
 }
 
+/* -------------------------------------------------------------------------- */
 
 void loop()
 {
     static uint32_t frame = 1;
     for (uint32_t i = 0; i < CONFIG_NEOPIXEL_CH0_NUM; ++i)
     {
-        strip_0.setPixelColor(i, i < frame ? _color : 0);
+        strip_0.setPixelColor(i, i < frame ? _color_list[_color_index] : 0);
     }
 
     frame = (frame + 1) % (CONFIG_NEOPIXEL_CH0_NUM + 1);
@@ -101,3 +137,5 @@ void loop()
 
     delay(1000);
 }
+
+/* -------------------------------------------------------------------------- */
