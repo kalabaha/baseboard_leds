@@ -9,3 +9,5 @@
 
 #define CONFIG_NEOPIXEL_CH0_PIN     (26)
 #define CONFIG_NEOPIXEL_CH0_NUM     (5)
+
+#define CONFIG_MDNS_NAME            ("bbled")
